@@ -14,7 +14,7 @@ MAIN_CHANNEL = os.environ.get("MAIN_CHANNEL", "-1003693002045") # Change as need
 LOG_CHANNEL = os.environ.get("LOG_CHANNEL", "-1003693002045")
 MONGO_URL = os.environ.get("MONGO_URL", "mongodb+srv://probito140:umaid2008@cluster0.1utfc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 MONGO_NAME = os.environ.get("MONGO_NAME", "cantarellabots")
-OWNER_ID = int(os.environ.get("OWNER_ID", "5585016974"))
+OWNER_ID = int(os.environ.get("OWNER_ID", "6497757690"))
 ADMIN_URL = os.environ.get("ADMIN_URL", "ProObito")
 BOT_USERNAME = os.environ.get("BOT_USERNAME", "@Obitoencbot")
 FSUB_PIC = os.environ.get("FSUB_PIC", "https://files.catbox.moe/bli70r.jpg")
