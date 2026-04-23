@@ -78,10 +78,13 @@ async def handle_url_or_search(client: Client, message):
         await message.reply("<blockquote>ᴄʜᴏᴏꜱᴇ ᴀɴ ᴏᴘᴛɪᴏɴ:</blockquote>", reply_markup=keyboard, parse_mode=ParseMode.HTML)
         current_urls[message.from_user.id] = url
 
+
 @Client.on_callback_query(filters.regex(r"^src_ani:(.*)"))
 async def aniwatch_search_cb(client, callback_query):
     query = callback_query.matches[0].group(1)
     await callback_query.answer("Searching Aniwatch...", show_alert=False)
+    
+    # FIX: Wrapped in to_thread so it doesn't crash on list
     results = await asyncio.to_thread(search_aniwatch, query)
     
     if not results:
@@ -89,16 +92,18 @@ async def aniwatch_search_cb(client, callback_query):
         
     buttons = []
     for res in results:
-        # ✅ Yeh symbol aur 'url' parameter isko Green link button banayega
         buttons.append([InlineKeyboardButton(f"✅ {res['title'][:50]}", url=res['url'])])
     
     buttons.append([InlineKeyboardButton("⬅️ Back", callback_data=f"back_src:{query}")])
     await callback_query.edit_message_caption(caption=f"<blockquote>📺 **Aniwatch Results:** `{query}`</blockquote>", reply_markup=InlineKeyboardMarkup(buttons))
 
+
 @Client.on_callback_query(filters.regex(r"^src_aw:(.*)"))
 async def animeworld_search_cb(client, callback_query):
     query = callback_query.matches[0].group(1)
     await callback_query.answer("Searching Anime World...", show_alert=False)
+    
+    # FIX: Wrapped in to_thread so it doesn't crash on list
     results = await asyncio.to_thread(search_animeworld, query)
     
     if not results:
@@ -106,11 +111,11 @@ async def animeworld_search_cb(client, callback_query):
         
     buttons = []
     for res in results:
-        # ✅ Yeh symbol aur 'url' parameter isko Green link button banayega
         buttons.append([InlineKeyboardButton(f"✅ {res['title'][:50]}", url=res['url'])])
         
     buttons.append([InlineKeyboardButton("⬅️ Back", callback_data=f"back_src:{query}")])
     await callback_query.edit_message_caption(caption=f"<blockquote>🌍 **Anime World Results:** `{query}`</blockquote>", reply_markup=InlineKeyboardMarkup(buttons))
+
 
 @Client.on_callback_query(filters.regex(r"^back_src:(.*)"))
 async def back_to_sources(client, callback_query):
