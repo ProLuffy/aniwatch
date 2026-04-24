@@ -1,17 +1,54 @@
+#@cantarellabots
+from cantarella.core.proxy import get_random_proxy, get_proxy_dict
 import requests
 from bs4 import BeautifulSoup
+from curl_cffi import requests as c_requests
+
+BASE_URL = "https://aniwatchtv.to"
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+}
 
 def search_anime(query):
-    url = f"https://animewatchtv.to/search?keyword={query.replace(' ', '+')}"
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    search_url = f"{BASE_URL}/search?keyword={query.replace(' ', '+')}"
     try:
-        r = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(r.text, 'html.parser')
+        session = c_requests.Session()
+        proxy_dict = get_proxy_dict(get_random_proxy())
+        if proxy_dict:
+            session.proxies.update(proxy_dict)
+            
+        resp = session.get(search_url, headers=HEADERS, impersonate="chrome")
+        if resp.status_code != 200:
+            return []
+
+        soup = BeautifulSoup(resp.text, 'html.parser')
         results = []
-        for item in soup.select('.film-name a'):
-            t = item.get('title') or item.text.strip()
-            l = item.get('href')
-            results.append({'title': t, 'url': f"https://animewatchtv.to{l}" if l.startswith('/') else l})
-        return results[:10]
-    except: return []
+
+        for item in soup.select('.film_list-wrap .flw-item'):
+            title_elem = item.select_one('.film-name a')
+            if not title_elem:
+                continue
+
+            title = title_elem.get('title') or title_elem.text.strip()
+            href = title_elem.get('href')
+
+            anime_id = href.split('/')[-1].split('?')[0]
+
+            type_elem = item.select_one('.fdi-item')
+            anime_type = type_elem.text.strip() if type_elem else "Unknown"
+
+            results.append({
+                'title': title,
+                'id': anime_id,
+                'type': anime_type,
+                'url': f"{BASE_URL}{href}" if href.startswith('/') else f"{BASE_URL}/{href}"
+            })
+
+            if len(results) >= 10:
+                break
+
+        return results
+    except Exception as e:
+        print(f"Search error Aniwatch: {e}")
+        return []
         
